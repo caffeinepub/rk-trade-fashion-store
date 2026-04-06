@@ -1,9 +1,17 @@
-import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import {
+  Heart,
+  Menu,
+  Search,
+  Settings,
+  ShoppingBag,
+  User,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "../backend.d";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
-import { useCart } from "../hooks/useQueries";
+import { useCart, useIsAdmin } from "../hooks/useQueries";
 
 interface HeaderProps {
   onCategorySelect: (cat: Category | null) => void;
@@ -12,6 +20,7 @@ interface HeaderProps {
   onAccountOpen: () => void;
   onSearchOpen: () => void;
   onLogoClick: () => void;
+  onAdminOpen?: () => void;
 }
 
 const NAV_LINKS: { label: string; value: Category | null }[] = [
@@ -29,10 +38,12 @@ export default function Header({
   onAccountOpen,
   onSearchOpen,
   onLogoClick,
+  onAdminOpen,
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: cart } = useCart();
   const { identity } = useInternetIdentity();
+  const { data: isAdmin } = useIsAdmin();
 
   const cartCount =
     cart?.items.reduce((sum, item) => sum + Number(item.quantity), 0) ?? 0;
@@ -106,6 +117,17 @@ export default function Header({
               {link.label}
             </button>
           ))}
+          {isAdmin && onAdminOpen && (
+            <button
+              type="button"
+              onClick={onAdminOpen}
+              className="flex items-center gap-1.5 font-sans text-[12px] font-semibold tracking-widest uppercase text-gold hover:text-gold/80 border border-gold/40 px-3 py-1 hover:bg-gold/5 transition-colors"
+              data-ocid="nav.admin.link"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              ADMIN
+            </button>
+          )}
         </nav>
 
         {/* Right: utility icons */}
@@ -187,6 +209,20 @@ export default function Header({
                   {link.label}
                 </button>
               ))}
+              {isAdmin && onAdminOpen && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAdminOpen();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-6 py-3 text-left font-sans text-[12px] font-semibold tracking-widest uppercase text-gold hover:bg-[#F7F6F2] transition-colors flex items-center gap-2"
+                  data-ocid="mobile_nav.admin.link"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  ADMIN PANEL
+                </button>
+              )}
             </nav>
           </motion.div>
         )}

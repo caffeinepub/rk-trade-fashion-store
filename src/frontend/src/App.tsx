@@ -39,7 +39,7 @@ const INSTAGRAM_IMAGES = [
   },
 ];
 
-type View = "home" | "products";
+type View = "home" | "products" | "admin";
 
 export default function App() {
   const [view, setView] = useState<View>("home");
@@ -48,7 +48,6 @@ export default function App() {
   );
   const [cartOpen, setCartOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<CardProduct | null>(
     null,
@@ -84,6 +83,16 @@ export default function App() {
     setAccountOpen(true);
   }, []);
 
+  const handleAdminOpen = useCallback(() => {
+    if (isAdmin) {
+      setView("admin");
+    }
+  }, [isAdmin]);
+
+  const handleAdminClose = useCallback(() => {
+    setView("home");
+  }, []);
+
   const handleDenimCollection = useCallback(() => {
     handleCategorySelect("men" as Category);
   }, [handleCategorySelect]);
@@ -91,6 +100,47 @@ export default function App() {
   const handleKnitwearCollection = useCallback(() => {
     handleCategorySelect("women" as Category);
   }, [handleCategorySelect]);
+
+  // Full-page admin view
+  if (view === "admin" && isAdmin) {
+    return (
+      <div
+        className="min-h-screen bg-offwhite flex flex-col"
+        data-ocid="app.section"
+      >
+        <Header
+          onCategorySelect={handleCategorySelect}
+          selectedCategory={selectedCategory}
+          onCartOpen={() => setCartOpen(true)}
+          onAccountOpen={() => setAccountOpen(true)}
+          onSearchOpen={() => setSearchOpen(true)}
+          onLogoClick={handleLogoClick}
+          onAdminOpen={handleAdminOpen}
+        />
+        <main className="flex-1" data-ocid="main.section">
+          <AdminPanel fullPage onClose={handleAdminClose} />
+        </main>
+        <FooterSection />
+
+        <AccountPanel
+          open={accountOpen}
+          onClose={() => setAccountOpen(false)}
+          onAdminOpen={handleAdminOpen}
+          isAdmin={isAdmin ?? false}
+        />
+        <SearchModal
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onProductClick={handleProductClick}
+        />
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={handleProductClose}
+        />
+        <Toaster position="bottom-right" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -105,6 +155,7 @@ export default function App() {
         onAccountOpen={() => setAccountOpen(true)}
         onSearchOpen={() => setSearchOpen(true)}
         onLogoClick={handleLogoClick}
+        onAdminOpen={handleAdminOpen}
       />
 
       {/* Main content */}
@@ -174,11 +225,9 @@ export default function App() {
       <AccountPanel
         open={accountOpen}
         onClose={() => setAccountOpen(false)}
-        onAdminOpen={() => setAdminOpen(true)}
+        onAdminOpen={handleAdminOpen}
         isAdmin={isAdmin ?? false}
       />
-
-      <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
 
       <SearchModal
         open={searchOpen}
